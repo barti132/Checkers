@@ -3,18 +3,21 @@ package pl.barti;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Ellipse;
+import javafx.scene.text.Font;
+import javafx.scene.text.Text;
 import pl.barti.enums.PieceType;
 
 public class Piece extends StackPane{
 
     private PieceType type;
 
+    private boolean king;
     private double mouseX, mouseY;
     private double oldX, oldY;
 
     public Piece(PieceType type, int x, int y){
         this.type = type;
-
+        king = false;
         move(x, y);
 
         relocate(x * Game.TILE_SIZE, y * Game.TILE_SIZE);
@@ -58,6 +61,23 @@ public class Piece extends StackPane{
 
     public void abortMove(){
         relocate(oldX, oldY);
+    }
+
+    public void setKing(boolean king){
+        if(!this.king){
+            Text t = new Text();
+            t.setText("K");
+            t.setFont(Font.font ("Verdana", 20));
+            t.setStrokeWidth(Game.TILE_SIZE * 0.03);
+            t.setTranslateX((Game.TILE_SIZE - Game.TILE_SIZE * 0.3125 * 2) / 2);
+            t.setTranslateY((Game.TILE_SIZE - Game.TILE_SIZE * 0.26 * 2) / 2);
+            getChildren().add(t);
+        }
+        this.king = king;
+    }
+
+    public boolean isKing(){
+        return king;
     }
 
     public PieceType getType(){

@@ -99,6 +99,10 @@ public class Game{
                     board[newX][newY].setPiece(piece);
                     board = ai.move(board);
 
+                    if(newY == 0 && !piece.isKing()){
+                        piece.setKing(true);
+                    }
+
                     break;
                 case KILL:
                     piece.move(newX, newY);
@@ -109,9 +113,15 @@ public class Game{
                     board[toBoard(otherPiece.getOldX())][toBoard(otherPiece.getOldY())].setPiece(null);
                     pieceGroup.getChildren().remove(otherPiece);
 
+                    if(newY == 0 && !piece.isKing()){
+                        piece.setKing(true);
+                    }
+
                     board = ai.move(board);
                     break;
             }
+
+
         });
 
         return piece;

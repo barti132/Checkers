@@ -15,7 +15,7 @@ public class AI{
         for(int y = 0; y < Game.HEIGHT; y++){
             for(int x = 0; x < Game.WIDTH; x++){
                 if(board[x][y].hasPiece() && board[x][y].getPiece().getType() == PieceType.RED){
-                    if(x - 1 >= 0 && y + 1 <= Game.HEIGHT){
+                    if(x - 1 >= 0 && y + 1 < Game.HEIGHT){
                         if(board[x-1][y+1].hasPiece()){
 
                         }
@@ -27,7 +27,7 @@ public class AI{
                             return board;
                         }
                     }
-                    else if(x + 1 <= Game.WIDTH && y + 1 <= Game.HEIGHT){
+                    if(x + 1 < Game.WIDTH && y + 1 < Game.HEIGHT){
                         if(board[x+1][y+1].hasPiece()){
 
                         }
