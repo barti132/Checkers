@@ -45,7 +45,8 @@ public class Piece extends StackPane{
         });
 
         setOnMouseDragged(e ->{
-            relocate(e.getSceneX() - mouseX + oldX, e.getSceneY() - mouseY + oldY);
+            if(type == PieceType.WHITE)
+                relocate(e.getSceneX() - mouseX + oldX, e.getSceneY() - mouseY + oldY);
         });
     }
 

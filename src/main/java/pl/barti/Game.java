@@ -14,11 +14,15 @@ public class Game{
     private Tile[][] board;
     private Group tileGroup;
     private Group pieceGroup;
+    private AI ai;
+    private boolean playerMove;
 
     Game(){
         board = new Tile[WIDTH][HEIGHT];
         tileGroup = new Group();
         pieceGroup = new Group();
+        ai = new AI();
+        playerMove = true;
     }
 
     public Parent createContent(){
@@ -93,6 +97,8 @@ public class Game{
                     piece.move(newX, newY);
                     board[x0][y0].setPiece(null);
                     board[newX][newY].setPiece(piece);
+                    board = ai.move(board);
+
                     break;
                 case KILL:
                     piece.move(newX, newY);
@@ -102,6 +108,8 @@ public class Game{
                     Piece otherPiece = result.getPiece();
                     board[toBoard(otherPiece.getOldX())][toBoard(otherPiece.getOldY())].setPiece(null);
                     pieceGroup.getChildren().remove(otherPiece);
+
+                    board = ai.move(board);
                     break;
             }
         });
