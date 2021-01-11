@@ -16,6 +16,7 @@ public class Piece extends StackPane{
     private double oldX, oldY;
     private int x, y;
 
+
     public Piece(PieceType type, int x, int y){
         this.type = type;
         king = false;

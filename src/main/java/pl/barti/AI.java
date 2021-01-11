@@ -1,5 +1,6 @@
 package pl.barti;
 
+import javafx.scene.media.AudioClip;
 import pl.barti.enums.PieceType;
 import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -7,9 +8,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class AI{
 
     private int depth;
+    private AudioClip mediaPlayer;
 
-    public AI(){
+    public AI(AudioClip mediaPlayer){
         depth = 3;
+        this.mediaPlayer = mediaPlayer;
     }
 
     public Piece move(Tile[][] board, ArrayList<Piece> pieces, AtomicBoolean playerMove){
@@ -98,6 +101,7 @@ public class AI{
         piece.move(nextX, nextY);
         board[x][y].setPiece(null);
         board[nextX][nextY].setPiece(piece);
+        mediaPlayer.play();
     }
 
     /*   private int minimax(Node node, int depth, boolean maximizingPlayer){

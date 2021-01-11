@@ -4,9 +4,12 @@ import javafx.application.Platform;
 import javafx.scene.Group;
 import javafx.scene.Parent;
 import javafx.scene.layout.Pane;
+import javafx.scene.media.AudioClip;
 import pl.barti.enums.MoveType;
 import pl.barti.enums.PieceType;
+import javafx.scene.media.Media;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -22,14 +25,18 @@ public class Game{
     private AI ai;
     private AtomicBoolean playerMove;
     private Pane pane;
+    private AudioClip mediaPlayer;
 
     Game(){
+        mediaPlayer = new AudioClip(new Media(new File("src/main/java/pl/barti/chessMove.wav").toURI().toString()).getSource());
+        //mediaPlayer.setVolume(0);
         board = new Tile[WIDTH][HEIGHT];
         tileGroup = new Group();
         pieceGroup = new Group();
-        ai = new AI();
+        ai = new AI(mediaPlayer);
         pieces = new ArrayList<>();
         playerMove = new AtomicBoolean(true);
+
     }
 
     public Parent createContent(){
@@ -119,6 +126,7 @@ public class Game{
                         board[x0][y0].setPiece(null);
                         board[newX][newY].setPiece(piece);
 
+                        mediaPlayer.play();
                         aiMove();
                         break;
                 }
