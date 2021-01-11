@@ -1,6 +1,7 @@
 package pl.barti;
 
 import pl.barti.enums.PieceType;
+import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class AI{
@@ -11,7 +12,7 @@ public class AI{
         depth = 3;
     }
 
-    public Piece move(Tile[][] board, AtomicBoolean playerMove){
+    public Piece move(Tile[][] board, ArrayList<Piece> pieces, AtomicBoolean playerMove){
 
         try{
             Thread.sleep(500);
@@ -20,80 +21,71 @@ public class AI{
         }
 
         //random brute force
-        for(int y = 0; y < Game.HEIGHT; y++){
-            for(int x = 0; x < Game.WIDTH; x++){
-                if(board[x][y].hasPiece() && board[x][y].getPiece().getType() == PieceType.RED){
+        Piece piece = null;
+        for(Piece p : pieces){
+            if(p.getType() == PieceType.WHITE)
+                continue;
 
-                    //w góre
-                    if(board[x][y].getPiece().isKing()){
-                        if(x - 1 >= 0 && y - 1 >= 0){
-                            if(board[x-1][y-1].hasPiece() && board[x-1][y-1].getPiece().getType() == PieceType.WHITE &&
-                                    x - 2 >= 0 && y - 2 >= 0 && !board[x-2][y-2].hasPiece()){
-                                Piece piece  = board[x-1][y-1].getPiece();
-                                killOne(board, x, y, x-2, y-2, x-1, y-1);
-                                playerMove.set(true);
-                                return piece;
-                            }
-                            else if(!board[x-1][y-1].hasPiece()){
-                                move(board, x, y, x - 1, y - 1);
-                                playerMove.set(true);
-                                return null;
-                            }
-                        }
-                        //prawo
-                        if(x + 1 < Game.WIDTH && y - 1 >= 0){
-                            if(board[x+1][y-1].hasPiece() && board[x+1][y-1].getPiece().getType() == PieceType.WHITE &&
-                                    x + 2 < Game.WIDTH && y - 2 >= 0 && !board[x+2][y-2].hasPiece()){
-                                Piece piece  = board[x+1][y-1].getPiece();
-                                killOne(board, x, y, x+2, y-2, x+1, y-1);
-                                playerMove.set(true);
-                                return piece;
-                            }
-                            else if(!board[x+1][y-1].hasPiece()){
-                                move(board, x, y, x + 1, y - 1);
-                                playerMove.set(true);
-                                return null;
-                            }
-                        }
+            int x = p.getX();
+            int y = p.getY();
+            int left = x - 1;
+            int right = x + 1;
+            int up = y - 1;
+            int down = y + 1;
+            //w góre
+            if(p.isKing()){
+                if(left >= 0 && up >= 0){
+                    if(board[left][up].hasPiece() && board[left][up].getPiece().getType() == PieceType.WHITE && x - 2 >= 0 && y - 2 >= 0 && !board[x - 2][y - 2].hasPiece()){
+                        piece = board[left][up].getPiece();
+                        killOne(board, x, y, x - 2, y - 2, left, up);
+                        break;
                     }
-
-                    //w dół
-                    //lewo
-                    if(x - 1 >= 0 && y + 1 < Game.HEIGHT){
-                        if(board[x-1][y+1].hasPiece() && board[x-1][y+1].getPiece().getType() == PieceType.WHITE &&
-                                x - 2 >= 0 && y + 2 < Game.HEIGHT && !board[x-2][y+2].hasPiece()){
-                            Piece piece  = board[x-1][y+1].getPiece();
-                            killOne(board, x, y, x-2, y+2, x-1, y+1);
-                            playerMove.set(true);
-                            return piece;
-                        }
-                        else if(!board[x-1][y+1].hasPiece()){
-                            move(board, x, y, x - 1, y + 1);
-                            playerMove.set(true);
-                            return null;
-                        }
+                    else if(!board[left][up].hasPiece()){
+                        move(board, x, y, left, up);
+                        break;
                     }
-                    //prawo
-                    if(x + 1 < Game.WIDTH && y + 1 < Game.HEIGHT){
-                        if(board[x+1][y+1].hasPiece() && board[x+1][y+1].getPiece().getType() == PieceType.WHITE &&
-                                x + 2 < Game.WIDTH && y + 2 < Game.HEIGHT && !board[x+2][y+2].hasPiece()){
-                            Piece piece  = board[x+1][y+1].getPiece();
-                            killOne(board, x, y, x+2, y+2, x+1, y+1);
-                            playerMove.set(true);
-                            return piece;
-                        }
-                        else if(!board[x+1][y+1].hasPiece()){
-                            move(board, x, y, x + 1, y + 1);
-                            playerMove.set(true);
-                            return null;
-                        }
+                }
+                if(right < Game.WIDTH && up >= 0){
+                    if(board[right][up].hasPiece() && board[right][up].getPiece().getType() == PieceType.WHITE && x + 2 < Game.WIDTH && y - 2 >= 0 && !board[x + 2][y - 2].hasPiece()){
+                        piece = board[right][up].getPiece();
+                        killOne(board, x, y, x + 2, y - 2, right, up);
+                        break;
                     }
-
+                    else if(!board[right][up].hasPiece()){
+                        move(board, x, y, right, up);
+                        break;
+                    }
+                }
+            }
+            //w dół
+            //lewo
+            if(left >= 0 && down < Game.HEIGHT){
+                if(board[left][down].hasPiece() && board[left][down].getPiece().getType() == PieceType.WHITE && x - 2 >= 0 && y + 2 < Game.HEIGHT && !board[x - 2][y + 2].hasPiece()){
+                    piece = board[left][down].getPiece();
+                    killOne(board, x, y, x - 2, y + 2, left, down);
+                    break;
+                }
+                else if(!board[left][down].hasPiece()){
+                    move(board, x, y, left, down);
+                    break;
+                }
+            }
+            //prawo
+            if(right < Game.WIDTH && down < Game.HEIGHT){
+                if(board[right][down].hasPiece() && board[right][down].getPiece().getType() == PieceType.WHITE && x + 2 < Game.WIDTH && y + 2 < Game.HEIGHT && !board[x + 2][y + 2].hasPiece()){
+                    piece = board[right][down].getPiece();
+                    killOne(board, x, y, x + 2, y + 2, right, down);
+                    break;
+                }
+                else if(!board[right][down].hasPiece()){
+                    move(board, x, y, right,down);
+                    break;
                 }
             }
         }
+
         playerMove.set(true);
-        return null;
+        return piece;
     }
 
     private void killOne(Tile[][] board, int x, int y, int nextX, int nextY, int enemyX, int enemyY){

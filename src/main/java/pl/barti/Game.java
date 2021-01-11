@@ -18,6 +18,7 @@ public class Game{
     private Tile[][] board;
     private Group tileGroup;
     private Group pieceGroup;
+    private ArrayList<Piece> pieces;
     private AI ai;
     private AtomicBoolean playerMove;
     private Pane pane;
@@ -27,6 +28,7 @@ public class Game{
         tileGroup = new Group();
         pieceGroup = new Group();
         ai = new AI();
+        pieces = new ArrayList<>();
         playerMove = new AtomicBoolean(true);
     }
 
@@ -53,6 +55,7 @@ public class Game{
                 if(piece != null){
                     tile.setPiece(piece);
                     pieceGroup.getChildren().add(piece);
+                    pieces.add(piece);
                 }
             }
         }
@@ -140,7 +143,7 @@ public class Game{
             };
             @Override
             public void run(){
-                piece = ai.move(board, playerMove);
+                piece = ai.move(board, pieces, playerMove);
                 Platform.runLater(updater);
             }
         });
@@ -148,9 +151,10 @@ public class Game{
     }
 
     private void update(Piece piece){
-        if(piece != null)
+        if(piece != null){
             pieceGroup.getChildren().remove(piece);
-
+            pieces.remove(piece);
+        }
         for(int i = 0; i < Game.WIDTH; i+=2){
             if(board[i][7].hasPiece() && board[i][7].getPiece().getType() == PieceType.RED && !board[i][7].getPiece().isKing())
                 board[i][7].getPiece().setKing(true);

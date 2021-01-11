@@ -14,6 +14,7 @@ public class Piece extends StackPane{
     private boolean king;
     private double mouseX, mouseY;
     private double oldX, oldY;
+    private int x, y;
 
     public Piece(PieceType type, int x, int y){
         this.type = type;
@@ -54,6 +55,8 @@ public class Piece extends StackPane{
     }
 
     public void move(int x, int y){
+        this.x = x;
+        this.y = y;
         oldX = x * Game.TILE_SIZE;
         oldY = y * Game.TILE_SIZE;
         relocate(oldX, oldY);
@@ -90,5 +93,13 @@ public class Piece extends StackPane{
 
     public double getOldY(){
         return oldY;
+    }
+
+    public int getX(){
+        return x;
+    }
+
+    public int getY(){
+        return y;
     }
 }
