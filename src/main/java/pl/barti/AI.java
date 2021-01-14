@@ -3,6 +3,7 @@ package pl.barti;
 import javafx.scene.media.AudioClip;
 import pl.barti.enums.PieceType;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class AI{
@@ -15,7 +16,7 @@ public class AI{
         this.mediaPlayer = mediaPlayer;
     }
 
-    public Piece move(Tile[][] board, ArrayList<Piece> pieces, AtomicBoolean playerMove){
+    public List<Piece> move(Tile[][] board, ArrayList<Piece> pieces, AtomicBoolean playerMove){
 
         try{
             Thread.sleep(500);
@@ -24,7 +25,7 @@ public class AI{
         }
 
         //random brute force
-        Piece piece = null;
+        List<Piece> pieceList = new ArrayList<>();
         for(Piece p : pieces){
             if(p.getType() == PieceType.WHITE)
                 continue;
@@ -39,7 +40,7 @@ public class AI{
             if(p.isKing()){
                 if(left >= 0 && up >= 0){
                     if(board[left][up].hasPiece() && board[left][up].getPiece().getType() == PieceType.WHITE && x - 2 >= 0 && y - 2 >= 0 && !board[x - 2][y - 2].hasPiece()){
-                        piece = board[left][up].getPiece();
+                        pieceList.add(board[left][up].getPiece());
                         killOne(board, x, y, x - 2, y - 2, left, up);
                         break;
                     }
@@ -50,7 +51,7 @@ public class AI{
                 }
                 if(right < Game.WIDTH && up >= 0){
                     if(board[right][up].hasPiece() && board[right][up].getPiece().getType() == PieceType.WHITE && x + 2 < Game.WIDTH && y - 2 >= 0 && !board[x + 2][y - 2].hasPiece()){
-                        piece = board[right][up].getPiece();
+                        pieceList.add(board[right][up].getPiece());
                         killOne(board, x, y, x + 2, y - 2, right, up);
                         break;
                     }
@@ -64,7 +65,7 @@ public class AI{
             //lewo
             if(left >= 0 && down < Game.HEIGHT){
                 if(board[left][down].hasPiece() && board[left][down].getPiece().getType() == PieceType.WHITE && x - 2 >= 0 && y + 2 < Game.HEIGHT && !board[x - 2][y + 2].hasPiece()){
-                    piece = board[left][down].getPiece();
+                    pieceList.add(board[left][down].getPiece());
                     killOne(board, x, y, x - 2, y + 2, left, down);
                     break;
                 }
@@ -76,7 +77,7 @@ public class AI{
             //prawo
             if(right < Game.WIDTH && down < Game.HEIGHT){
                 if(board[right][down].hasPiece() && board[right][down].getPiece().getType() == PieceType.WHITE && x + 2 < Game.WIDTH && y + 2 < Game.HEIGHT && !board[x + 2][y + 2].hasPiece()){
-                    piece = board[right][down].getPiece();
+                    pieceList.add(board[right][down].getPiece());
                     killOne(board, x, y, x + 2, y + 2, right, down);
                     break;
                 }
@@ -88,7 +89,7 @@ public class AI{
         }
 
         playerMove.set(true);
-        return piece;
+        return pieceList;
     }
 
     private void killOne(Tile[][] board, int x, int y, int nextX, int nextY, int enemyX, int enemyY){

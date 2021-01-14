@@ -11,6 +11,8 @@ import javafx.scene.media.Media;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Game{
@@ -36,7 +38,6 @@ public class Game{
         ai = new AI(mediaPlayer);
         pieces = new ArrayList<>();
         playerMove = new AtomicBoolean(true);
-
     }
 
     public Parent createContent(){
@@ -79,7 +80,8 @@ public class Game{
 
         if(Math.abs(newX - x0) == 1 && (newY - y0 == piece.getType().moveDir || piece.isKing() && newY - y0 == (piece.getType().moveDir * -1))) {
             return new MoveResult(MoveType.NORMAL);
-        }else if (Math.abs(newX - x0) == 2 && (newY - y0 == piece.getType().moveDir * 2 || piece.isKing() && newY - y0 == (piece.getType().moveDir * -2))) {
+        }
+        else if(Math.abs(newX - x0) == 2 && (newY - y0 == piece.getType().moveDir * 2 || piece.isKing() && newY - y0 == (piece.getType().moveDir * -2))) {
 
             int x1 = x0 + (newX - x0) / 2;
             int y1 = y0 + (newY - y0) / 2;
@@ -91,11 +93,14 @@ public class Game{
         return new MoveResult(MoveType.NONE);
     }
 
+
     private Piece makePiece(PieceType type, int x, int y){
+
         Piece piece = new Piece(type, x, y);
 
         piece.setOnMouseReleased(e -> {
             if(playerMove.get()){
+                Boolean flag = false;
                 int newX = toBoard(piece.getLayoutX());
                 int newY = toBoard(piece.getLayoutY());
 
@@ -116,7 +121,9 @@ public class Game{
                     case KILL:
                         Piece otherPiece = result.getPiece();
                         board[toBoard(otherPiece.getLayoutX())][toBoard(otherPiece.getLayoutY())].setPiece(null);
-                        update(otherPiece);
+                        update(Arrays.asList(otherPiece));
+
+                        flag = true;
 
                     case NORMAL:
                         if(newY == 0 && !piece.isKing())
@@ -127,7 +134,9 @@ public class Game{
                         board[newX][newY].setPiece(piece);
 
                         mediaPlayer.play();
-                        aiMove();
+                        if(!(flag && checkKillNext(piece)))
+                            aiMove();
+
                         break;
                 }
             }
@@ -139,30 +148,55 @@ public class Game{
         return piece;
     }
 
+    private boolean checkKillNext(Piece p){
+        int x = p.getX();
+        int y = p.getY();
+        int left = x - 1;
+        int right = x + 1;
+        int up = y - 1;
+        int down = y + 1;
+
+        if(left >= 0 && up >= 0 && board[left][up].hasPiece() && board[left][up].getPiece().getType() == PieceType.RED && x - 2 >= 0 && y - 2 >= 0 && !board[x - 2][y - 2].hasPiece())
+            return true;
+
+        if( right < Game.WIDTH && up >= 0 && board[right][up].hasPiece() && board[right][up].getPiece().getType() == PieceType.RED && x + 2 < Game.WIDTH && y - 2 >= 0 && !board[x + 2][y - 2].hasPiece())
+            return true;
+
+        if(p.isKing()){
+            if(left >= 0 && down < Game.HEIGHT && board[left][down].hasPiece() && board[left][down].getPiece().getType() == PieceType.RED && x - 2 >= 0 && y + 2 < Game.HEIGHT && !board[x - 2][y + 2].hasPiece())
+                return true;
+
+            if(right < Game.WIDTH && down < Game.HEIGHT && board[right][down].hasPiece() && board[right][down].getPiece().getType() == PieceType.RED && x + 2 < Game.WIDTH && y + 2 < Game.HEIGHT && !board[x + 2][y + 2].hasPiece())
+                return true;
+        }
+        return false;
+    }
+
     private void aiMove(){
         playerMove.set(false);
         Thread thread = new Thread(new Runnable(){
-            Piece piece;
+            List<Piece> pieceList;
             Runnable updater = new Runnable(){
                 @Override
                 public void run(){
-                    update(piece);
+                    update(pieceList);
                 }
             };
             @Override
             public void run(){
-                piece = ai.move(board, pieces, playerMove);
+                pieceList = ai.move(board, pieces, playerMove);
                 Platform.runLater(updater);
             }
         });
         thread.start();
     }
 
-    private void update(Piece piece){
-        if(piece != null){
-            pieceGroup.getChildren().remove(piece);
-            pieces.remove(piece);
+    private void update(List<Piece> pieceList){
+        for(Piece p : pieceList){
+            pieceGroup.getChildren().remove(p);
+            pieces.remove(p);
         }
+
         for(int i = 0; i < Game.WIDTH; i+=2){
             if(board[i][7].hasPiece() && board[i][7].getPiece().getType() == PieceType.RED && !board[i][7].getPiece().isKing())
                 board[i][7].getPiece().setKing(true);
