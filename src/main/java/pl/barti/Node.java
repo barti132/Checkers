@@ -9,7 +9,7 @@ public class Node{
     private ArrayList<Node> children;
 
     private char[][] map;
-    private ArrayList<Piece> piecesToKill;
+    private ArrayList<int[]> piecesToKill;
     private Piece piece;
     private int nextX, nextY;
 
@@ -63,7 +63,7 @@ public class Node{
         this.piece = piece;
     }
 
-    public ArrayList<Piece> getPiecesToKill(){
+    public ArrayList<int[]> getPiecesToKill(){
         return piecesToKill;
     }
 
