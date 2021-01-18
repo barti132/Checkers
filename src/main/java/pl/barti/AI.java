@@ -14,11 +14,13 @@ public class AI{
     private final int moveValue;
     private final int killValue;
     private final int promValue;
+    private final int kingMoveValue;
 
     public AI(AudioClip mediaPlayer){
         depth = 5;
         this.mediaPlayer = mediaPlayer;
         moveValue = 5;
+        kingMoveValue = 10;
         killValue = 100;
         promValue = 50;
     }
@@ -108,7 +110,7 @@ public class AI{
     private void isPromo(Node n, PieceType type){
         if((type == PieceType.RED && n.getY() == Game.HEIGHT - 1 && n.getMap()[n.getX()][n.getY()] != 't')
                 || (type == PieceType.WHITE && n.getY() == 0 && n.getMap()[n.getX()][n.getY()] != 'e')){
-            n.setValue(n.getValue() + promValue);
+            n.setValue(n.getValue() + promValue * type.moveDir);
             char[][] map = n.getMap();
             if(type == PieceType.RED)
                 map[n.getX()][n.getY()] = 't';
@@ -116,6 +118,17 @@ public class AI{
                 map[n.getX()][n.getY()] = 'e';
             n.setMap(map);
         }
+    }
+
+    private Node createNode(int x, int y, char[][] map, int value, int nextX, int nextY){
+        Node n = new Node();
+        n.setX(x);
+        n.setY(y);
+        n.setMap(map);
+        n.setValue(value);
+        n.setNextX(nextX);
+        n.setNextY(nextY);
+        return n;
     }
 
     private void createTree(Node node, int depth, PieceType type){
@@ -147,13 +160,7 @@ public class AI{
                     map[left][up] = ' ';
                     map[x - 2][y - 2] = p;
 
-                    Node n = new Node();
-                    n.setX(x);
-                    n.setY(y);
-                    n.setMap(map);
-                    n.setValue(n.getValue() + killValue);
-                    n.setNextX(x - 2);
-                    n.setNextY(y - 2);
+                    Node n = createNode(x, y, map, killValue * type.moveDir, x - 2, y - 2);
                     n.getPiecesToKill().add(toKill);
                     multiKill(n, type);
                     isPromo(n, type);
@@ -171,13 +178,7 @@ public class AI{
                     map[right][up] = ' ';
                     map[x + 2][y - 2] = p;
 
-                    Node n = new Node();
-                    n.setMap(map);
-                    n.setX(x);
-                    n.setY(y);
-                    n.setValue(n.getValue() + killValue);
-                    n.setNextX(x + 2);
-                    n.setNextY(y - 2);
+                    Node n = createNode(x, y, map, killValue * type.moveDir, x + 2, y - 2);
                     n.getPiecesToKill().add(toKill);
                     multiKill(n, type);
                     isPromo(n, type);
@@ -195,13 +196,7 @@ public class AI{
                     map[left][down] = ' ';
                     map[x - 2][y + 2] = p;
 
-                    Node n = new Node();
-                    n.setMap(map);
-                    n.setX(x);
-                    n.setY(y);
-                    n.setValue(n.getValue() + killValue);
-                    n.setNextX(x - 2);
-                    n.setNextY(y + 2);
+                    Node n = createNode(x, y, map, killValue * type.moveDir, x - 2, y + 2);
                     n.getPiecesToKill().add(toKill);
                     multiKill(n, type);
                     isPromo(n, type);
@@ -219,13 +214,7 @@ public class AI{
                     map[right][down] = ' ';
                     map[x + 2][y + 2] = p;
 
-                    Node n = new Node();
-                    n.setMap(map);
-                    n.setX(x);
-                    n.setY(y);
-                    n.setValue(n.getValue() + killValue);
-                    n.setNextX(x + 2);
-                    n.setNextY(y + 2);
+                    Node n = createNode(x, y, map, killValue * type.moveDir, x + 2, y + 2);
                     n.getPiecesToKill().add(toKill);
                     multiKill(n, type);
                     isPromo(n, type);
@@ -234,16 +223,14 @@ public class AI{
                     nextNode(n, depth, type);
                 }
 
+                //move
                 if((type == PieceType.WHITE || originMap[x][y] == 't') && left >= 0 && up >= 0 && node.getMap()[left][up] == ' '){
                     char[][]map = setMove(node.getMap(), x, y, left, up);
 
-                    Node n = new Node();
-                    n.setMap(map);
-                    n.setX(x);
-                    n.setY(y);
-                    n.setValue(moveValue);
-                    n.setNextX(left);
-                    n.setNextY(up);
+                    int val = moveValue * type.moveDir;
+                    if(originMap[x][y] == 't' || originMap[x][y] == 'e')
+                        val = kingMoveValue * type.moveDir;
+                    Node n = createNode(x, y, map, val, left, up);
                     isPromo(n, type);
 
                     node.getChildren().add(n);
@@ -252,13 +239,10 @@ public class AI{
                 if((type == PieceType.WHITE || originMap[x][y] == 't') && right < Game.WIDTH && up >= 0 && node.getMap()[right][up] == ' '){
                     char[][]map = setMove(node.getMap(), x, y, right, up);
 
-                    Node n = new Node();
-                    n.setMap(map);
-                    n.setX(x);
-                    n.setY(y);
-                    n.setValue(moveValue);
-                    n.setNextX(right);
-                    n.setNextY(up);
+                    int val = moveValue * type.moveDir;
+                    if(originMap[x][y] == 't' || originMap[x][y] == 'e')
+                        val = kingMoveValue * type.moveDir;
+                    Node n = createNode(x, y, map, val, right, up);
                     isPromo(n, type);
 
                     node.getChildren().add(n);
@@ -267,13 +251,10 @@ public class AI{
                 if((type == PieceType.RED || originMap[x][y] == 'e') && left >= 0 && down < Game.HEIGHT && node.getMap()[left][down] == ' '){
                     char[][]map = setMove(node.getMap(), x, y, left, down);
 
-                    Node n = new Node();
-                    n.setMap(map);
-                    n.setX(x);
-                    n.setY(y);
-                    n.setValue(moveValue);
-                    n.setNextX(left);
-                    n.setNextY(down);
+                    int val = moveValue * type.moveDir;
+                    if(originMap[x][y] == 't' || originMap[x][y] == 'e')
+                        val = kingMoveValue * type.moveDir;
+                    Node n = createNode(x, y, map, val, left, down);
                     isPromo(n, type);
 
                     node.getChildren().add(n);
@@ -282,13 +263,10 @@ public class AI{
                 if((type == PieceType.RED || originMap[x][y] == 'e') && right < Game.WIDTH && down < Game.HEIGHT && node.getMap()[right][down] == ' '){
                     char[][]map = setMove(node.getMap(), x, y, right, down);
 
-                    Node n = new Node();
-                    n.setMap(map);
-                    n.setX(x);
-                    n.setY(y);
-                    n.setValue(moveValue);
-                    n.setNextX(right);
-                    n.setNextY(down);
+                    int val = moveValue * type.moveDir;
+                    if(originMap[x][y] == 't' || originMap[x][y] == 'e')
+                        val = kingMoveValue * type.moveDir;
+                    Node n = createNode(x, y, map, val, right, down);
                     isPromo(n, type);
 
                     node.getChildren().add(n);
@@ -360,13 +338,14 @@ public class AI{
             }
         }
 
-        move(board, nextMove.getX(), nextMove.getY(), nextMove.getNextX(), nextMove.getNextY());
-
         ArrayList<Piece> toKill = new ArrayList<>();
+        if(nextMove != null){
+            move(board, nextMove.getX(), nextMove.getY(), nextMove.getNextX(), nextMove.getNextY());
 
-        for(int i = 0; i < nextMove.getPiecesToKill().size(); i++){
-            toKill.add(board[nextMove.getPiecesToKill().get(i)[0]][nextMove.getPiecesToKill().get(i)[1]].getPiece());
-            board[nextMove.getPiecesToKill().get(i)[0]][nextMove.getPiecesToKill().get(i)[1]].setPiece(null);
+            for(int i = 0; i < nextMove.getPiecesToKill().size(); i++){
+                toKill.add(board[nextMove.getPiecesToKill().get(i)[0]][nextMove.getPiecesToKill().get(i)[1]].getPiece());
+                board[nextMove.getPiecesToKill().get(i)[0]][nextMove.getPiecesToKill().get(i)[1]].setPiece(null);
+            }
         }
 
         playerMove.set(true);
