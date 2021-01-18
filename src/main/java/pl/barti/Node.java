@@ -10,8 +10,8 @@ public class Node{
 
     private char[][] map;
     private ArrayList<int[]> piecesToKill;
-    private Piece piece;
     private int nextX, nextY;
+    private int x, y;
 
     public Node(){
         value = 0;
@@ -55,16 +55,24 @@ public class Node{
         this.nextY = nextY;
     }
 
-    public Piece getPiece(){
-        return piece;
-    }
-
-    public void setPiece(Piece piece){
-        this.piece = piece;
-    }
-
     public ArrayList<int[]> getPiecesToKill(){
         return piecesToKill;
+    }
+
+    public int getX(){
+        return x;
+    }
+
+    public void setX(int x){
+        this.x = x;
+    }
+
+    public int getY(){
+        return y;
+    }
+
+    public void setY(int y){
+        this.y = y;
     }
 
     public boolean isFinalNode(){

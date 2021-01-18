@@ -1,5 +1,6 @@
 package pl.barti;
 
+import javafx.scene.Group;
 import javafx.scene.media.AudioClip;
 import pl.barti.enums.PieceType;
 import java.util.ArrayList;
@@ -10,10 +11,16 @@ public class AI{
 
     private int depth;
     private AudioClip mediaPlayer;
+    private final int moveValue;
+    private final int killValue;
+    private final int promValue;
 
     public AI(AudioClip mediaPlayer){
-        depth = 3;
+        depth = 5;
         this.mediaPlayer = mediaPlayer;
+        moveValue = 5;
+        killValue = 100;
+        promValue = 50;
     }
 
     private void nextNode(Node node, int depth, PieceType type){
@@ -98,6 +105,19 @@ public class AI{
         n.setMap(map);
     }
 
+    private void isPromo(Node n, PieceType type){
+        if((type == PieceType.RED && n.getY() == Game.HEIGHT - 1 && n.getMap()[n.getX()][n.getY()] != 't')
+                || (type == PieceType.WHITE && n.getY() == 0 && n.getMap()[n.getX()][n.getY()] != 'e')){
+            n.setValue(n.getValue() + promValue);
+            char[][] map = n.getMap();
+            if(type == PieceType.RED)
+                map[n.getX()][n.getY()] = 't';
+            else
+                map[n.getX()][n.getY()] = 'e';
+            n.setMap(map);
+        }
+    }
+
     private void createTree(Node node, int depth, PieceType type){
         if(depth == 0)
             return;
@@ -128,12 +148,15 @@ public class AI{
                     map[x - 2][y - 2] = p;
 
                     Node n = new Node();
+                    n.setX(x);
+                    n.setY(y);
                     n.setMap(map);
-                    n.setValue(n.getValue() + 10 * type.moveDir);
+                    n.setValue(n.getValue() + killValue);
                     n.setNextX(x - 2);
                     n.setNextY(y - 2);
                     n.getPiecesToKill().add(toKill);
                     multiKill(n, type);
+                    isPromo(n, type);
 
                     node.getChildren().add(n);
                     nextNode(n, depth, type);
@@ -150,11 +173,14 @@ public class AI{
 
                     Node n = new Node();
                     n.setMap(map);
-                    n.setValue(n.getValue() + 10 * type.moveDir);
+                    n.setX(x);
+                    n.setY(y);
+                    n.setValue(n.getValue() + killValue);
                     n.setNextX(x + 2);
                     n.setNextY(y - 2);
                     n.getPiecesToKill().add(toKill);
                     multiKill(n, type);
+                    isPromo(n, type);
 
                     node.getChildren().add(n);
                     nextNode(n, depth, type);
@@ -171,11 +197,14 @@ public class AI{
 
                     Node n = new Node();
                     n.setMap(map);
-                    n.setValue(n.getValue() + 10 * type.moveDir);
+                    n.setX(x);
+                    n.setY(y);
+                    n.setValue(n.getValue() + killValue);
                     n.setNextX(x - 2);
                     n.setNextY(y + 2);
                     n.getPiecesToKill().add(toKill);
                     multiKill(n, type);
+                    isPromo(n, type);
 
                     node.getChildren().add(n);
                     nextNode(n, depth, type);
@@ -192,11 +221,14 @@ public class AI{
 
                     Node n = new Node();
                     n.setMap(map);
-                    n.setValue(n.getValue() + 10 * type.moveDir);
+                    n.setX(x);
+                    n.setY(y);
+                    n.setValue(n.getValue() + killValue);
                     n.setNextX(x + 2);
                     n.setNextY(y + 2);
                     n.getPiecesToKill().add(toKill);
                     multiKill(n, type);
+                    isPromo(n, type);
 
                     node.getChildren().add(n);
                     nextNode(n, depth, type);
@@ -207,11 +239,14 @@ public class AI{
 
                     Node n = new Node();
                     n.setMap(map);
-                    n.setValue(5 * type.moveDir);
+                    n.setX(x);
+                    n.setY(y);
+                    n.setValue(moveValue);
                     n.setNextX(left);
                     n.setNextY(up);
-                    node.getChildren().add(n);
+                    isPromo(n, type);
 
+                    node.getChildren().add(n);
                     nextNode(n, depth, type);
                 }
                 if((type == PieceType.WHITE || originMap[x][y] == 't') && right < Game.WIDTH && up >= 0 && node.getMap()[right][up] == ' '){
@@ -219,11 +254,14 @@ public class AI{
 
                     Node n = new Node();
                     n.setMap(map);
-                    n.setValue(5 * type.moveDir);
+                    n.setX(x);
+                    n.setY(y);
+                    n.setValue(moveValue);
                     n.setNextX(right);
                     n.setNextY(up);
-                    node.getChildren().add(n);
+                    isPromo(n, type);
 
+                    node.getChildren().add(n);
                     nextNode(n, depth, type);
                 }
                 if((type == PieceType.RED || originMap[x][y] == 'e') && left >= 0 && down < Game.HEIGHT && node.getMap()[left][down] == ' '){
@@ -231,11 +269,14 @@ public class AI{
 
                     Node n = new Node();
                     n.setMap(map);
-                    n.setValue(5 * type.moveDir);
+                    n.setX(x);
+                    n.setY(y);
+                    n.setValue(moveValue);
                     n.setNextX(left);
                     n.setNextY(down);
-                    node.getChildren().add(n);
+                    isPromo(n, type);
 
+                    node.getChildren().add(n);
                     nextNode(n, depth, type);
                 }
                 if((type == PieceType.RED || originMap[x][y] == 'e') && right < Game.WIDTH && down < Game.HEIGHT && node.getMap()[right][down] == ' '){
@@ -243,11 +284,14 @@ public class AI{
 
                     Node n = new Node();
                     n.setMap(map);
-                    n.setValue(5 * type.moveDir);
+                    n.setX(x);
+                    n.setY(y);
+                    n.setValue(moveValue);
                     n.setNextX(right);
                     n.setNextY(down);
-                    node.getChildren().add(n);
+                    isPromo(n, type);
 
+                    node.getChildren().add(n);
                     nextNode(n, depth, type);
                 }
             }
@@ -294,122 +338,42 @@ public class AI{
 
     public List<Piece> move(Tile[][] board, ArrayList<Piece> pieces, AtomicBoolean playerMove){
 
-        char[][] map = convertMap(board);
-
-        Node node = new Node();
-        node.setMap(map);
-
-        createTree(node, depth, PieceType.RED);
-
-        print(node);
-
         try{
-            Thread.sleep(500);
+            Thread.sleep(400);
         }catch(InterruptedException e){
             e.printStackTrace();
         }
 
-        List<Piece> pieceList = new ArrayList<>();
-        for(Piece p : pieces){
-            if(p.getType() == PieceType.WHITE)
-                continue;
+        char[][] map = convertMap(board);
 
-            boolean flag = false;
-            int x, y, left, right, up, down;
+        Node node = new Node();
+        node.setMap(map);
+        createTree(node, depth, PieceType.RED);
 
-            while(true){
-                x = p.getX();
-                y = p.getY();
-                left = x - 1;
-                right = x + 1;
-                up = y - 1;
-                down = y + 1;
-
-                if(p.isKing() && left >= 0 && up >= 0 && checkLeftUp(board, x, y, PieceType.WHITE)){
-                    pieceList.add(board[left][up].getPiece());
-                    killOne(board, x, y, x - 2, y - 2, left, up);
-                }
-                else if(p.isKing() && right < Game.WIDTH && up >= 0 && checkRightUp(board, x, y, PieceType.WHITE)){
-                    pieceList.add(board[right][up].getPiece());
-                    killOne(board, x, y, x + 2, y - 2, right, up);
-                }
-                else if(left >= 0 && down < Game.HEIGHT && checkLeftDown(board, x, y, PieceType.WHITE)){
-                    pieceList.add(board[left][down].getPiece());
-                    killOne(board, x, y, x - 2, y + 2, left, down);
-                }
-                else if(right < Game.WIDTH && down < Game.HEIGHT && checkRightDown(board, x, y, PieceType.WHITE)){
-                    pieceList.add(board[right][down].getPiece());
-                    killOne(board, x, y, x + 2, y + 2, right, down);
-                }
-                else{
-                    break;
-                }
-                flag = true;
-            }
-
-            if(flag)
-                break;
-
-            if(p.isKing() && left >= 0 && up >= 0 && !board[left][up].hasPiece()){
-                move(board, x, y, left, up);
-                break;
-            }
-            if(p.isKing() && right < Game.WIDTH && up >= 0 && !board[right][up].hasPiece()){
-                move(board, x, y, right, up);
-                break;
-            }
-            if(left >= 0 && down < Game.HEIGHT && !board[left][down].hasPiece()){
-                move(board, x, y, left, down);
-                break;
-            }
-            if(right < Game.WIDTH && down < Game.HEIGHT && !board[right][down].hasPiece()){
-                move(board, x, y, right,down);
-                break;
+        Node nextMove = null;
+        int maxValue = 0;
+        for(Node child : node.getChildren()){
+            int val = minimax(child, depth, true);
+            if(maxValue < val){
+                maxValue = val;
+                nextMove = child;
             }
         }
 
+        move(board, nextMove.getX(), nextMove.getY(), nextMove.getNextX(), nextMove.getNextY());
+
+        ArrayList<Piece> toKill = new ArrayList<>();
+
+        for(int i = 0; i < nextMove.getPiecesToKill().size(); i++){
+            toKill.add(board[nextMove.getPiecesToKill().get(i)[0]][nextMove.getPiecesToKill().get(i)[1]].getPiece());
+            board[nextMove.getPiecesToKill().get(i)[0]][nextMove.getPiecesToKill().get(i)[1]].setPiece(null);
+        }
+
         playerMove.set(true);
-        return pieceList;
+        return toKill;
     }
 
-    private boolean checkLeftUp(Tile[][] board, int x, int y, PieceType type){
-        int left = x - 1;
-        int up = y - 1;
-        if(board[left][up].hasPiece() && board[left][up].getPiece().getType() == type && x - 2 >= 0 && y - 2 >= 0 && !board[x - 2][y - 2].hasPiece())
-            return true;
-        return false;
-    }
-
-    private boolean checkRightUp(Tile[][] board, int x, int y, PieceType type){
-        int up = y - 1;
-        int right = x + 1;
-        if(board[right][up].hasPiece() && board[right][up].getPiece().getType() == type && x + 2 < Game.WIDTH && y - 2 >= 0 && !board[x + 2][y - 2].hasPiece())
-            return true;
-        return false;
-    }
-
-    private boolean checkLeftDown(Tile[][] board, int x, int y, PieceType type){
-        int left = x - 1;
-        int down = y + 1;
-        if(board[left][down].hasPiece() && board[left][down].getPiece().getType() == type && x - 2 >= 0 && y + 2 < Game.HEIGHT && !board[x - 2][y + 2].hasPiece())
-            return true;
-        return false;
-    }
-
-    private boolean checkRightDown(Tile[][] board, int x, int y, PieceType type){
-        int right = x + 1;
-        int down = y + 1;
-        if(board[right][down].hasPiece() && board[right][down].getPiece().getType() == type && x + 2 < Game.WIDTH && y + 2 < Game.HEIGHT && !board[x + 2][y + 2].hasPiece())
-            return true;
-        return false;
-    }
-
-    private void killOne(Tile[][] board, int x, int y, int nextX, int nextY, int enemyX, int enemyY){
-        board[enemyX][enemyY].setPiece(null);
-        move(board, x, y, nextX, nextY);
-    }
-
-    private void move(Tile[][] board, int x, int y, int nextX, int nextY ){
+    private void move(Tile[][] board, int x, int y, int nextX, int nextY){
         Piece piece = board[x][y].getPiece();
         piece.move(nextX, nextY);
         board[x][y].setPiece(null);
@@ -439,93 +403,3 @@ public class AI{
         return value;
      }
 }
-
-/*
-    private void createTree(Node node, int depth, PieceType type){
-        if(depth == 0)
-            return;
-
-        for(Piece p : node.getPieceList()){
-            if(p.getType() != type)
-                continue;
-
-            int x, y, left, right, up, down;
-            x = p.getX();
-            y = p.getY();
-            left = x - 1;
-            right = x + 1;
-            up = y - 1;
-            down = y + 1;
-
-
-            if((type == PieceType.WHITE || p.isKing()) && left >= 0 && up >= 0 && !node.getMap()[left][up].hasPiece()){
-                Node n = new Node();
-                node.getChildren().add(n);
-                n.setPieceList(node.getPieceList());
-                n.setPiece(p);
-                n.setValue(5 * type.moveDir);
-                n.setNextX(left);
-                n.setNextY(up);
-                node.getMap()[x][y].setPiece(null);
-                node.getMap()[left][up].setPiece(p);
-                n.setMap(node.getMap());
-
-                if(type == PieceType.RED)
-                    createTree(n, depth - 1, PieceType.WHITE);
-                else
-                    createTree(n, depth - 1, PieceType.RED);
-            }
-            if((type == PieceType.WHITE || p.isKing()) && right < Game.WIDTH && up >= 0 && !node.getMap()[right][up].hasPiece()){
-                Node n = new Node();
-                node.getChildren().add(n);
-                n.setPiece(p);
-                n.setPieceList(node.getPieceList());
-                n.setValue(5 * type.moveDir);
-                n.setNextX(right);
-                n.setNextY(up);
-                node.getMap()[x][y].setPiece(null);
-                node.getMap()[right][up].setPiece(p);
-                n.setMap(node.getMap());
-
-                if(type == PieceType.RED)
-                    createTree(n, depth - 1, PieceType.WHITE);
-                else
-                    createTree(n, depth - 1, PieceType.RED);
-            }
-            if((type == PieceType.RED || p.isKing()) && left >= 0 && down < Game.HEIGHT && !node.getMap()[left][down].hasPiece()){
-                Node n = new Node();
-                node.getChildren().add(n);
-                n.setPiece(p);
-                n.setPieceList(node.getPieceList());
-                n.setValue(5 * type.moveDir);
-                n.setNextX(left);
-                n.setNextY(down);
-                node.getMap()[x][y].setPiece(null);
-                node.getMap()[left][down].setPiece(p);
-                n.setMap(node.getMap());
-
-                if(type == PieceType.RED)
-                    createTree(n, depth - 1, PieceType.WHITE);
-                else
-                    createTree(n, depth - 1, PieceType.RED);
-            }
-            if((type == PieceType.RED || node.getPiece().isKing()) && right < Game.WIDTH && down < Game.HEIGHT && !node.getMap()[right][down].hasPiece()){
-                Node n = new Node();
-                node.getChildren().add(n);
-                n.setPiece(p);
-                n.setPieceList(node.getPieceList());
-                n.setValue(5 * type.moveDir);
-                n.setNextX(right);
-                n.setNextY(down);
-                node.getMap()[x][y].setPiece(null);
-                node.getMap()[right][down].setPiece(p);
-                n.setMap(node.getMap());
-
-                if(type == PieceType.RED)
-                    createTree(n, depth - 1, PieceType.WHITE);
-                else
-                    createTree(n, depth - 1, PieceType.RED);
-            }
-        }
-    }
- */
