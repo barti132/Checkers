@@ -1,6 +1,5 @@
 package pl.barti;
 
-import javafx.scene.Group;
 import javafx.scene.media.AudioClip;
 import pl.barti.enums.PieceType;
 import java.util.ArrayList;
@@ -12,16 +11,16 @@ public class AI{
     private int depth;
     private AudioClip mediaPlayer;
     private final int moveValue;
-    private final int killValue;
+    private final int captureValue;
     private final int promValue;
     private final int kingMoveValue;
 
     public AI(AudioClip mediaPlayer){
-        depth = 5;
+        depth = 7;
         this.mediaPlayer = mediaPlayer;
         moveValue = 5;
         kingMoveValue = 10;
-        killValue = 100;
+        captureValue = 100;
         promValue = 50;
     }
 
@@ -32,7 +31,7 @@ public class AI{
             createTree(node, depth - 1, PieceType.RED);
     }
 
-    private void multiKill(Node n, PieceType type){
+    private void multiCapture(Node n, PieceType type){
         int x, y, left, right, up, down;
         char[][] map = n.getMap();
 
@@ -136,11 +135,11 @@ public class AI{
             return;
 
         for(int y = 0; y < Game.HEIGHT; y++){
-            for(int x = 0; x < Game.WIDTH; x++){
+            for(int x = y % 2 == 0 ? 1 : 0; x < Game.WIDTH; x+=2){
                 char[][] originMap = node.getMap();
-                if(     originMap[x][y] == ' ' ||
-                        type == PieceType.RED && (originMap[x][y] == 'w' || originMap[x][y] == 'e') ||
-                        type == PieceType.WHITE && (originMap[x][y] == 'r' || originMap[x][y] == 't'))
+                if(originMap[x][y] == ' '
+                        || type == PieceType.RED && (originMap[x][y] == 'w' || originMap[x][y] == 'e')
+                        || type == PieceType.WHITE && (originMap[x][y] == 'r' || originMap[x][y] == 't'))
                     continue;
 
                 int left, right, up, down;
@@ -149,6 +148,7 @@ public class AI{
                 up = y - 1;
                 down = y + 1;
 
+                //capture
                 if(((type == PieceType.WHITE || originMap[x][y] == 't') && left >= 0 && up >= 0 && originMap[left][up] != ' ')
                         && x - 2 >= 0 && y - 2 >= 0
                         && ((type == PieceType.WHITE && (originMap[left][up] == 'r' || originMap[left][up] == 't') && originMap[x - 2][y - 2] == ' ')
@@ -160,11 +160,13 @@ public class AI{
                     map[left][up] = ' ';
                     map[x - 2][y - 2] = p;
 
-                    Node n = createNode(x, y, map, killValue * type.moveDir, x - 2, y - 2);
+                    Node n = createNode(x, y, map, captureValue * type.moveDir, x - 2, y - 2);
+                    n.setCaptureMove(true);
                     n.getPiecesToKill().add(toKill);
-                    multiKill(n, type);
+                    multiCapture(n, type);
                     isPromo(n, type);
 
+                    node.setCaptureChildren(true);
                     node.getChildren().add(n);
                     nextNode(n, depth, type);
                 }
@@ -178,11 +180,13 @@ public class AI{
                     map[right][up] = ' ';
                     map[x + 2][y - 2] = p;
 
-                    Node n = createNode(x, y, map, killValue * type.moveDir, x + 2, y - 2);
+                    Node n = createNode(x, y, map, captureValue * type.moveDir, x + 2, y - 2);
                     n.getPiecesToKill().add(toKill);
-                    multiKill(n, type);
+                    n.setCaptureMove(true);
+                    multiCapture(n, type);
                     isPromo(n, type);
 
+                    node.setCaptureChildren(true);
                     node.getChildren().add(n);
                     nextNode(n, depth, type);
                 }
@@ -196,11 +200,13 @@ public class AI{
                     map[left][down] = ' ';
                     map[x - 2][y + 2] = p;
 
-                    Node n = createNode(x, y, map, killValue * type.moveDir, x - 2, y + 2);
+                    Node n = createNode(x, y, map, captureValue * type.moveDir, x - 2, y + 2);
                     n.getPiecesToKill().add(toKill);
-                    multiKill(n, type);
+                    n.setCaptureMove(true);
+                    multiCapture(n, type);
                     isPromo(n, type);
 
+                    node.setCaptureChildren(true);
                     node.getChildren().add(n);
                     nextNode(n, depth, type);
                 }
@@ -214,14 +220,19 @@ public class AI{
                     map[right][down] = ' ';
                     map[x + 2][y + 2] = p;
 
-                    Node n = createNode(x, y, map, killValue * type.moveDir, x + 2, y + 2);
+                    Node n = createNode(x, y, map, captureValue * type.moveDir, x + 2, y + 2);
                     n.getPiecesToKill().add(toKill);
-                    multiKill(n, type);
+                    n.setCaptureMove(true);
+                    multiCapture(n, type);
                     isPromo(n, type);
 
+                    node.setCaptureChildren(true);
                     node.getChildren().add(n);
                     nextNode(n, depth, type);
                 }
+
+                if(node.hasCaptureChildren())
+                    continue;
 
                 //move
                 if((type == PieceType.WHITE || originMap[x][y] == 't') && left >= 0 && up >= 0 && node.getMap()[left][up] == ' '){
@@ -303,30 +314,36 @@ public class AI{
 
         return map;
     }
+    private static int number = 0;
 
     private void print(Node node){
         if(node.getChildren().size() == 0)
             return;
 
-        System.out.println(node.getChildren().size());
+        number++;
         for(int i = 0; i < node.getChildren().size(); i++){
             print(node.getChildren().get(i));
         }
     }
 
-    public List<Piece> move(Tile[][] board, ArrayList<Piece> pieces, AtomicBoolean playerMove){
+    public List<Piece> move(Tile[][] board, AtomicBoolean playerMove){
 
-        try{
-            Thread.sleep(400);
+     /* try{
+            Thread.sleep(300);
         }catch(InterruptedException e){
             e.printStackTrace();
-        }
+        }*/
 
         char[][] map = convertMap(board);
+
+        long start = System.currentTimeMillis();
 
         Node node = new Node();
         node.setMap(map);
         createTree(node, depth, PieceType.RED);
+
+        long finish = System.currentTimeMillis();
+        System.out.println(finish - start);
 
         Node nextMove = null;
         int maxValue = 0;
@@ -380,5 +397,5 @@ public class AI{
             }
         }
         return value;
-     }
+    }
 }

@@ -4,12 +4,11 @@ import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 
-
 public class Main extends Application{
 
     private static Game game;
     @Override
-    public void start(Stage stage) throws Exception{
+    public void start(Stage stage){
         Scene scene = new Scene(game.createContent());
         stage.setTitle("Warcaby");
         stage.setScene(scene);

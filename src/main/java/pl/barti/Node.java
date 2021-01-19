@@ -2,7 +2,6 @@ package pl.barti;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
 public class Node{
     private int value;
@@ -12,11 +11,15 @@ public class Node{
     private ArrayList<int[]> piecesToKill;
     private int nextX, nextY;
     private int x, y;
+    private boolean captureMove;
+    private boolean captureChildren;
 
     public Node(){
         value = 0;
         children = new ArrayList<>();
         piecesToKill = new ArrayList<>();
+        captureMove = false;
+        captureChildren = false;
     }
 
     public int getValue(){
@@ -81,4 +84,29 @@ public class Node{
         return false;
     }
 
+    public boolean isCaptureMove(){
+        return captureMove;
+    }
+
+    public void setCaptureMove(boolean captureMove){
+        this.captureMove = captureMove;
+    }
+
+    public boolean hasCaptureChildren(){
+        return captureChildren;
+    }
+
+    public void setCaptureChildren(boolean captureChildren){
+        if(!this.captureChildren){
+            ArrayList<Node> delete = new ArrayList<>();
+            for(Node n : children){
+                if(!n.isCaptureMove())
+                    delete.add(n);
+
+            }
+
+            children.removeAll(delete);
+        }
+        this.captureChildren = captureChildren;
+    }
 }
