@@ -184,7 +184,7 @@ public class Game{
             };
             @Override
             public void run(){
-                pieceList = ai.move(board, pieces, playerMove);
+                pieceList = ai.move(board, playerMove);
                 Platform.runLater(updater);
             }
         });
