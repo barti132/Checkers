@@ -1,5 +1,6 @@
 package pl.barti;
 
+import pl.barti.boardelements.Piece;
 import pl.barti.enums.MoveType;
 
 public class MoveResult{

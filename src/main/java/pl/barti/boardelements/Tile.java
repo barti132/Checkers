@@ -1,7 +1,8 @@
-package pl.barti;
+package pl.barti.boardelements;
 
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
+import pl.barti.Game;
 
 
 public class Tile extends Rectangle{
@@ -25,13 +26,15 @@ public class Tile extends Rectangle{
     public Piece getPiece(){
         return piece;
     }
+
     public void setPiece(Piece piece){
         this.piece = piece;
     }
 
     public boolean hasPiece(){
-        if(piece == null)
+        if(piece == null){
             return false;
+        }
         return true;
     }
 }

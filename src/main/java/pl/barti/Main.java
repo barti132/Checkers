@@ -7,10 +7,11 @@ import javafx.stage.Stage;
 public class Main extends Application{
 
     private static Game game;
+
     @Override
     public void start(Stage stage){
         Scene scene = new Scene(game.createContent());
-        stage.setTitle("Warcaby");
+        stage.setTitle("Checkers");
         stage.setScene(scene);
         stage.show();
     }
